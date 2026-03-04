@@ -1,0 +1,52 @@
+name: Mi workflow de Python
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Ejecutar tests unitarios
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Construir imagen de test
+        run: docker build --target test -t notas-api:test .
+
+      - name: Ejecutar tests
+        run: docker run --rm notas-api:test
+
+  build-and-push:
+    name: Build y push a DockerHub
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout del repo
+        uses: actions/checkout@v4
+
+      - name: Configurar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login a DockerHub
+        run: docker login -u ${{ secrets.DOCKERHUB_nombre }} -p ${{ secrets.DOCKERHUB_usuario }}
+
+      - name: Extraer metadatos de imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_nombre }}/notas-api
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=main-,format=short
+
+      - name: Build y push imagen
+        run: |
+          IMAGE=$(echo "${{ secrets.DOCKERHUB_nombre }}/notas-api:latest" | tr '[:upper:]' '[:lower:]')
+          docker build --target production -t $IMAGE .
+          docker push $IMAGE$(date +%s)
