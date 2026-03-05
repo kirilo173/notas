@@ -1,4 +1,4 @@
-name: Mi workflow de python
+name: Mi workflow de python.
 
 on:
   push:
