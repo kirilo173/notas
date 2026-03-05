@@ -1,4 +1,4 @@
-name: Mi workflow de python.
+name: Mi workflow de pyth0n
 
 on:
   push:
@@ -26,10 +26,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
 
-
     steps:
       - name: Checkout del repo
         uses: actions/checkout@v4
+
+      - name: Extraer metadatos de imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.nombre }}/notas-api
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=main-,format=short
 
       - name: Login a DockerHub
         uses: docker/login-action@v3
@@ -39,5 +47,5 @@ jobs:
 
       - name: Build y push imagen
         run: |
-          docker build --target produccion -t ${{ secrets.nombre }}/notas-api:latest .
+          docker build --target production -t ${{ secrets.nombre }}/notas-api:latest .
           docker push ${{ secrets.nombre }}/notas-api:latest
