@@ -31,26 +31,13 @@ jobs:
       - name: Checkout del repo
         uses: actions/checkout@v4
 
-      - name: Configurar Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Login a DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.nombre }}
           password: ${{ secrets.usuario }}
 
-      - name: Extraer metadatos de imagen
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ secrets.nombre }}/notas-api
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix=main-,format=short
-
       - name: Build y push imagen
         run: |
-          IMAGE=$(echo "${{ secrets.nombre }}/notas-api:latest" | tr '[:upper:]' '[:lower:]')
-          docker build --target production -t $IMAGE .
-          docker push $IMAGE
+          docker build --target produccion -t ${{ secrets.nombre }}/notas-api:latest .
+          docker push ${{ secrets.nombre }}/notas-api:latest
